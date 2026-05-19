@@ -1,0 +1,8 @@
+{
+  "name": "Sulayman Bowles Portfolio",
+  "description": "A monochrome personal portfolio for Sulayman Bowles, focused on technical SEO systems, AI search discoverability, finance/data analysis, Void Agency, and evidence-backed web systems.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
