@@ -1,18 +1,34 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Sulayman Bowles Portfolio
 
-# Run and deploy your AI Studio app
+A Vite React portfolio and agency/research site for Sulayman Bowles. The app keeps the animated client experience, while the production build generates route-specific static HTML for crawlable metadata, summaries, canonical URLs, and JSON-LD.
 
-This contains everything you need to run your app locally.
+## Routes
 
-View your app in AI Studio: https://ai.studio/apps/30ca25a5-2f18-424e-9050-9cd08b714dde
+- `/`
+- `/about`
+- `/atlas`
+- `/method`
+- `/markets`
+- `/markets/network-monopolies`
+- `/markets/computational-commodity-systems`
+- `/markets/fiat-horizon`
 
-## Run Locally
+Aliases such as `/projects/atlas`, `/void-agency`, and `/projects/markets` normalize to their canonical routes in the client router.
 
-**Prerequisites:**  Node.js
+## Local Development
 
-1. Install dependencies:
-   `npm install`
-2. Run the app:
-   `npm run dev`
+Prerequisite: Node.js.
+
+```bash
+npm ci
+npm run dev
+```
+
+## Verification
+
+```bash
+npm run lint
+npm run build
+```
+
+`npm run build` runs `vite build` and then `scripts/generate-static-routes.ts`, which writes canonical route HTML into `dist/`.

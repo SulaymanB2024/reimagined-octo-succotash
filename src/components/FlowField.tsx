@@ -114,7 +114,7 @@ export function FlowField({ className = '', density = 40 }: FlowFieldProps) {
   return (
     <div ref={containerRef} className={`relative overflow-hidden bg-ink ${className}`}>
       <motion.div style={{ y: yTransform, willChange: 'transform', backfaceVisibility: 'hidden' }} className="absolute inset-0 w-full h-[120%] -top-[10%] transform-gpu">
-        <canvas ref={canvasRef} className="w-full h-full block" />
+        <canvas ref={canvasRef} className="w-full h-full block" role="presentation" aria-hidden="true" />
       </motion.div>
     </div>
   );

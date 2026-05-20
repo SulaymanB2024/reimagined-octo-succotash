@@ -1,11 +1,19 @@
 import { motion } from 'motion/react';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { useSEO } from '../utils/seo';
 import VoidCrawlMap from '../components/VoidCrawlMap';
 import { PageTechnicalChrome } from '../components/PageTechnicalChrome';
 import { ScrollProgress } from '../components/ScrollProgress';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { ShutterWipe } from '../components/ShutterWipe';
 import { SmoothCursor } from '../components/SmoothCursor';
+import { ScrambleText } from '../components/ScrambleText';
+import { RevealText } from '../components/RevealText';
+import { StaggeredText } from '../components/StaggeredText';
+import { useReducedMotion } from '../hooks/useReducedMotion';
+import { getSeoRoute } from '../seo/routes';
+
+const METHOD_SEO = getSeoRoute('/method')!;
 
 type MethodColumn = {
   number: string;
@@ -27,6 +35,21 @@ type CaseStudy = {
   visual: 'urls' | 'entity' | 'heatmap' | 'local';
   href: string;
 };
+
+function NavLink({ href, active, id, children }: { href: string; active?: boolean; id?: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      id={id}
+      data-cursor-text={typeof children === 'string' ? children : 'VIEW'}
+      className={`hover-target relative group overflow-visible px-3 py-1 transition-colors ${active ? 'text-[#f1efe8]' : 'text-[#f1efe8]/58 hover:text-[#f1efe8]'}`}
+    >
+      <span className="block transition-transform duration-500 will-change-transform group-hover:px-2">{children}</span>
+      <span className={`absolute left-0 top-1 transition-opacity duration-300 ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>[</span>
+      <span className={`absolute right-0 top-1 transition-opacity duration-300 ${active ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>]</span>
+    </a>
+  );
+}
 
 const methodColumns: MethodColumn[] = [
   {
@@ -122,19 +145,20 @@ function DarkNoise() {
   );
 }
 
-function ArrowLink({ children, href = '#' }: { children: ReactNode; href?: string }) {
+function ArrowLink({ children, href = '#', id }: { children: ReactNode; href?: string; id?: string }) {
   return (
-    <a href={href} data-cursor-text={typeof children === 'string' ? children : 'VIEW'} className="hover-target inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.28em] text-[#f1efe8]/70 transition-colors hover:text-[#f1efe8]">
+    <a id={id} href={href} data-cursor-text={typeof children === 'string' ? children : 'VIEW'} className="hover-target inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.28em] text-[#f1efe8]/70 transition-colors hover:text-[#f1efe8]">
       {children}
       <span aria-hidden="true">↗</span>
     </a>
   );
 }
 
-function CircleAuditButton({ className = '' }: { className?: string }) {
+function CircleAuditButton({ className = '', id }: { className?: string; id?: string }) {
   return (
     <motion.a
-      href="mailto:sulayman.bowles@gmail.com"
+      href="/#contact"
+      id={id}
       data-cursor-text="AUDIT"
       className={`hover-target relative grid h-28 w-28 place-items-center overflow-hidden rounded-full bg-[#f1efe8] text-center text-[10px] font-medium uppercase leading-relaxed tracking-[0.2em] text-[#080807] md:h-32 md:w-32 ${className}`}
       whileHover={{ scale: 1.045 }}
@@ -257,14 +281,30 @@ function MethodColumnView({ item }: { item: MethodColumn }) {
   );
 }
 
-function ProcessIcon({ type }: { type: ProcessStep['icon'] }) {
+function ProcessIcon({ type, isHovered }: { type: ProcessStep['icon']; isHovered: boolean }) {
   const common = 'fill-none stroke-current';
   if (type === 'crawl') {
     return (
       <svg viewBox="0 0 64 64" className="h-12 w-12" aria-hidden="true">
-        <rect className={common} x="10" y="10" width="31" height="31" strokeWidth="1" strokeDasharray="2 5" />
-        <circle className={common} cx="28" cy="28" r="9" strokeWidth="1.2" />
-        <path className={common} d="M35 35 L48 48" strokeWidth="1.2" />
+        <motion.rect 
+          className={common} 
+          x="10" 
+          y="10" 
+          width="31" 
+          height="31" 
+          strokeWidth="1" 
+          strokeDasharray="3 4" 
+          animate={isHovered ? { strokeDashoffset: -20 } : { strokeDashoffset: 0 }}
+          transition={{ duration: 1.2, ease: "linear", repeat: isHovered ? Infinity : 0 }}
+        />
+        <motion.g
+          animate={isHovered ? { scale: 1.15, x: 2, y: 2 } : { scale: 1, x: 0, y: 0 }}
+          style={{ transformOrigin: "28px 28px" }}
+          transition={{ duration: 0.3 }}
+        >
+          <circle className={common} cx="28" cy="28" r="9" strokeWidth="1.2" />
+          <path className={common} d="M35 35 L48 48" strokeWidth="1.2" />
+        </motion.g>
         <circle cx="16" cy="18" r="1.8" fill="currentColor" opacity="0.55" />
         <circle cx="37" cy="17" r="1.8" fill="currentColor" opacity="0.45" />
       </svg>
@@ -273,28 +313,116 @@ function ProcessIcon({ type }: { type: ProcessStep['icon'] }) {
   if (type === 'stack') {
     return (
       <svg viewBox="0 0 64 64" className="h-12 w-12" aria-hidden="true">
-        <path className={common} d="M14 20 L32 10 L50 20 L32 30 Z M14 32 L32 42 L50 32 M14 44 L32 54 L50 44" strokeWidth="1.2" />
+        <motion.path 
+          className={common} 
+          d="M14 20 L32 10 L50 20 L32 30 Z" 
+          strokeWidth="1.2" 
+          animate={isHovered ? { y: -6 } : { y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        />
+        <motion.path 
+          className={common} 
+          d="M14 32 L32 42 L50 32" 
+          strokeWidth="1.2" 
+          animate={isHovered ? { y: -3 } : { y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        />
+        <motion.path 
+          className={common} 
+          d="M14 44 L32 54 L50 44" 
+          strokeWidth="1.2" 
+          animate={isHovered ? { y: 0 } : { y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        />
       </svg>
     );
   }
   if (type === 'target') {
     return (
       <svg viewBox="0 0 64 64" className="h-12 w-12" aria-hidden="true">
-        <circle className={common} cx="32" cy="32" r="22" strokeWidth="1" opacity="0.5" />
-        <circle className={common} cx="32" cy="32" r="12" strokeWidth="1.2" />
-        <circle cx="32" cy="32" r="3" fill="currentColor" opacity="0.72" />
-        <path className={common} d="M32 6 V14 M32 50 V58 M6 32 H14 M50 32 H58" strokeWidth="1" />
+        <motion.circle 
+          className={common} 
+          cx="32" 
+          cy="32" 
+          r="22" 
+          strokeWidth="1" 
+          opacity="0.5" 
+          animate={isHovered ? { rotate: 180, scale: 1.05 } : { rotate: 0, scale: 1 }}
+          style={{ transformOrigin: "32px 32px" }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+        />
+        <motion.circle 
+          className={common} 
+          cx="32" 
+          cy="32" 
+          r="12" 
+          strokeWidth="1.2" 
+          animate={isHovered ? { scale: 1.1 } : { scale: 1 }}
+          style={{ transformOrigin: "32px 32px" }}
+          transition={{ duration: 0.3 }}
+        />
+        <motion.circle 
+          cx="32" 
+          cy="32" 
+          r="3" 
+          fill="currentColor" 
+          animate={isHovered ? { scale: 1.4, opacity: 1 } : { scale: 1, opacity: 0.72 }}
+          transition={{ duration: 0.3 }}
+        />
+        <motion.path 
+          className={common} 
+          d="M32 6 V14 M32 50 V58 M6 32 H14 M50 32 H58" 
+          strokeWidth="1" 
+          animate={isHovered ? { scale: 1.15 } : { scale: 1 }}
+          style={{ transformOrigin: "32px 32px" }}
+          transition={{ duration: 0.3 }}
+        />
       </svg>
     );
   }
   return (
     <svg viewBox="0 0 64 64" className="h-12 w-12" aria-hidden="true">
-      <path className={common} d="M18 10 H42 L50 18 V54 H18 Z M42 10 V19 H50 M26 30 H42 M26 38 H42 M26 46 H36" strokeWidth="1.2" />
+      <motion.path 
+        className={common} 
+        d="M18 10 H42 L50 18 V54 H18 Z" 
+        strokeWidth="1.2" 
+        animate={isHovered ? { strokeWidth: 1.4 } : { strokeWidth: 1.2 }}
+      />
+      <motion.path 
+        className={common} 
+        d="M42 10 V19 H50 M26 30 H42 M26 38 H42 M26 46 H36" 
+        strokeWidth="1.2" 
+        animate={isHovered ? { pathLength: 1 } : { pathLength: 0.8 }}
+        transition={{ duration: 0.4 }}
+      />
     </svg>
   );
 }
 
-function CaseStudyVisual({ type }: { type: CaseStudy['visual'] }) {
+function ProcessStepCard({ step, index }: { step: ProcessStep; index: number }) {
+  const [isHovered, setIsHovered] = useState(false);
+  return (
+    <motion.div
+      className="group relative border-[#f1efe8]/12 p-6 transition-[background-color,border-color] duration-500 hover:bg-[#f1efe8]/[0.025] md:border-r md:last:border-r-0"
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="mb-12 flex items-start justify-between text-[10px] uppercase tracking-[0.3em] text-[#f1efe8]/38">
+        <span>{String(index + 1).padStart(2, '0')}</span>
+        <span>{index < 3 ? '→' : 'END'}</span>
+      </div>
+      <div className="mb-8 text-[#f1efe8]/58 transition-colors duration-500 group-hover:text-[#f1efe8]/82">
+        <ProcessIcon type={step.icon} isHovered={isHovered} />
+      </div>
+      <h3 className="mb-4 text-xs uppercase tracking-[0.34em] text-[#f1efe8]">{step.title}</h3>
+      <p className="text-sm leading-relaxed text-[#f1efe8]/55">{step.copy}</p>
+    </motion.div>
+  );
+}
+
+function CaseStudyVisual({ type, isHovered }: { type: CaseStudy['visual']; isHovered: boolean }) {
   if (type === 'urls') {
     const rows = ['/blog/', '/category/', '/product/', '/old/', '/tag/', '/search/', '/page/2/'];
     return (
@@ -304,7 +432,11 @@ function CaseStudyVisual({ type }: { type: CaseStudy['visual'] }) {
           <div className="grid gap-2 text-[10px] uppercase tracking-[0.16em] text-[#f1efe8]/46">
             {rows.map((row, index) => (
               <div key={row} className="flex items-center gap-3">
-                <span className={`h-1.5 w-1.5 rounded-full ${index % 4 === 0 ? 'bg-[#b7c8a8]/70' : index % 4 === 1 ? 'bg-[#f1efe8]/38' : index % 4 === 2 ? 'bg-[#c2695e]/55' : 'bg-[#f1efe8]/18'}`} />
+                <motion.span 
+                  animate={isHovered ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+                  transition={{ repeat: isHovered ? Infinity : 0, duration: 1.5, delay: index * 0.12 }}
+                  className={`h-1.5 w-1.5 rounded-full ${index % 4 === 0 ? 'bg-[#b7c8a8]/70' : index % 4 === 1 ? 'bg-[#f1efe8]/38' : index % 4 === 2 ? 'bg-[#c2695e]/55' : 'bg-[#f1efe8]/18'}`} 
+                />
                 <span>{row}</span>
               </div>
             ))}
@@ -334,11 +466,23 @@ function CaseStudyVisual({ type }: { type: CaseStudy['visual'] }) {
     return (
       <svg viewBox="0 0 230 178" className="h-44 w-full text-[#f1efe8]" aria-hidden="true">
         <g stroke="currentColor" opacity="0.18">
-          <path d="M116 38 L48 83 L73 138 L116 105 L158 140 L176 82 Z M48 83 L116 105 L176 82 M73 138 L158 140" fill="none" />
+          <motion.path 
+            d="M116 38 L48 83 L73 138 L116 105 L158 140 L176 82 Z M48 83 L116 105 L176 82 M73 138 L158 140" 
+            fill="none" 
+            animate={isHovered ? { pathLength: 1, opacity: 0.3 } : { pathLength: 0.8, opacity: 0.18 }}
+            transition={{ duration: 0.8 }}
+          />
         </g>
         {points.map(([label, x, y], index) => (
           <g key={String(label)}>
-            <circle cx={Number(x)} cy={Number(y)} r={index === 0 ? 12 : 8} fill="currentColor" opacity={index === 0 ? 0.52 : 0.3} />
+            <motion.circle 
+              cx={Number(x)} 
+              cy={Number(y)} 
+              r={index === 0 ? 12 : 8} 
+              fill="currentColor" 
+              animate={isHovered ? { scale: index === 0 ? 1.15 : 1.25, opacity: index === 0 ? 0.65 : 0.45 } : { scale: 1, opacity: index === 0 ? 0.52 : 0.3 }}
+              transition={{ duration: 0.4, delay: index * 0.05 }}
+            />
             <text x={Number(x)} y={Number(y) + 24} fill="rgba(241,239,232,0.52)" fontSize="8" letterSpacing="1.8" fontFamily="Inter, sans-serif" textAnchor="middle">
               {label}
             </text>
@@ -358,7 +502,14 @@ function CaseStudyVisual({ type }: { type: CaseStudy['visual'] }) {
               {Array.from({ length: 30 }, (_, index) => {
                 const green = (index + groupIndex) % 4 === 0;
                 const red = (index + groupIndex * 2) % 9 === 0;
-                return <span key={index} className={`aspect-square ${red ? 'bg-[#c2695e]/45' : green ? 'bg-[#b7c8a8]/55' : 'bg-[#f1efe8]/13'}`} />;
+                return (
+                  <motion.span 
+                    key={index} 
+                    animate={isHovered ? { scale: [1, 1.25, 1], opacity: [0.8, 1, 0.8] } : { scale: 1, opacity: 1 }}
+                    transition={{ repeat: isHovered ? Infinity : 0, duration: 1.6, delay: (index * 0.04) % 1.2 }}
+                    className={`aspect-square ${red ? 'bg-[#c2695e]/45' : green ? 'bg-[#b7c8a8]/55' : 'bg-[#f1efe8]/13'}`} 
+                  />
+                );
               })}
             </div>
           </div>
@@ -370,20 +521,29 @@ function CaseStudyVisual({ type }: { type: CaseStudy['visual'] }) {
   return (
     <div className="grid gap-5">
       <div className="grid gap-2 text-[10px] uppercase tracking-[0.18em] text-[#f1efe8]/52">
-        {['Austin, TX', 'Dallas, TX', 'Houston, TX', 'San Antonio, TX', 'Denver, CO'].map((city) => (
-          <div key={city} className="flex items-center justify-between border-b border-[#f1efe8]/10 pb-2">
+        {['Austin, TX', 'Dallas, TX', 'Houston, TX', 'San Antonio, TX', 'Denver, CO'].map((city, index) => (
+          <motion.div 
+            key={city} 
+            animate={isHovered ? { x: 4 } : { x: 0 }}
+            transition={{ duration: 0.3, delay: index * 0.05 }}
+            className="flex items-center justify-between border-b border-[#f1efe8]/10 pb-2"
+          >
             <span>{city}</span>
             <span className="h-1.5 w-1.5 rounded-full bg-[#b7c8a8]/55" />
-          </div>
+          </motion.div>
         ))}
       </div>
       <svg viewBox="0 0 240 84" className="h-20 w-full text-[#f1efe8]" aria-hidden="true">
         <g fill="none" stroke="currentColor" opacity="0.28">
-          <rect x="82" y="8" width="76" height="18" />
-          <rect x="18" y="58" width="58" height="18" />
-          <rect x="91" y="58" width="58" height="18" />
-          <rect x="164" y="58" width="58" height="18" />
-          <path d="M120 26 V42 M120 42 H47 V58 M120 42 V58 M120 42 H193 V58" />
+          <motion.rect x="82" y="8" width="76" height="18" animate={isHovered ? { strokeWidth: 1.5, opacity: 0.6 } : { strokeWidth: 1, opacity: 0.28 }} />
+          <motion.rect x="18" y="58" width="58" height="18" animate={isHovered ? { strokeWidth: 1.5, opacity: 0.6 } : { strokeWidth: 1, opacity: 0.28 }} />
+          <motion.rect x="91" y="58" width="58" height="18" animate={isHovered ? { strokeWidth: 1.5, opacity: 0.6 } : { strokeWidth: 1, opacity: 0.28 }} />
+          <motion.rect x="164" y="58" width="58" height="18" animate={isHovered ? { strokeWidth: 1.5, opacity: 0.6 } : { strokeWidth: 1, opacity: 0.28 }} />
+          <motion.path 
+            d="M120 26 V42 M120 42 H47 V58 M120 42 V58 M120 42 H193 V58" 
+            animate={isHovered ? { pathLength: 1 } : { pathLength: 0.7 }}
+            transition={{ duration: 0.5 }}
+          />
         </g>
       </svg>
     </div>
@@ -391,11 +551,14 @@ function CaseStudyVisual({ type }: { type: CaseStudy['visual'] }) {
 }
 
 function CaseStudyCard({ study }: { study: CaseStudy }) {
+  const [isHovered, setIsHovered] = useState(false);
   return (
     <motion.article
       className="group relative grid min-h-[560px] grid-rows-[auto_auto_1fr_auto] overflow-hidden border border-[#f1efe8]/12 p-6 transition-[border-color,background-color] duration-500 before:absolute before:left-0 before:top-0 before:h-px before:w-0 before:bg-[#f1efe8]/45 before:transition-all before:duration-700 hover:border-[#f1efe8]/32 hover:bg-[#f1efe8]/[0.025] hover:before:w-full"
       whileHover={{ y: -5 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="mb-8 flex items-start justify-between text-[10px] uppercase tracking-[0.28em] text-[#f1efe8]/42">
         <span>{study.category}</span>
@@ -406,47 +569,39 @@ function CaseStudyCard({ study }: { study: CaseStudy }) {
         <p className="mt-6 text-sm leading-relaxed text-[#f1efe8]/58">{study.copy}</p>
       </div>
       <div className="my-9 self-center transition-opacity duration-500 md:opacity-75 md:group-hover:opacity-100">
-        <CaseStudyVisual type={study.visual} />
+        <CaseStudyVisual type={study.visual} isHovered={isHovered} />
       </div>
-      <ArrowLink href={study.href}>VIEW CASE STUDY</ArrowLink>
+      <ArrowLink id={`method-case-study-${study.title.toLowerCase().replace(/\s+/g, '-')}`} href={study.href}>VIEW CASE STUDY</ArrowLink>
     </motion.article>
   );
 }
-
 export default function VoidAgencyMethodPage() {
-  useEffect(() => {
-    document.title = 'Void Agency Method | Sulayman Bowles';
-  }, []);
+  useSEO(METHOD_SEO);
+  const prefersReducedMotion = useReducedMotion();
 
   return (
     <main id="top" className="min-h-screen overflow-x-hidden bg-[#080807] text-[#f1efe8] selection:bg-[#f1efe8] selection:text-[#080807] md:cursor-none">
       <ShutterWipe />
       <DarkNoise />
       <PageTechnicalChrome tone="dark" />
-      <div className="hidden md:block">
+      {!prefersReducedMotion && <div className="hidden md:block">
         <SmoothCursor />
-      </div>
+      </div>}
       <ScrollProgress />
 
       <header className="sticky top-0 z-50 mx-auto w-full max-w-[1480px] px-4 py-6 md:px-8 xl:px-10">
         <div className="grid items-start gap-5 border-b border-[#f1efe8]/12 bg-[#080807]/82 pb-5 text-[10px] uppercase tracking-[0.3em] backdrop-blur-sm md:grid-cols-[1fr_auto_1fr]">
-          <a href="/" className="hover-target" data-cursor-text="HOME">
+          <a href="/" id="method-brand-link" className="hover-target" data-cursor-text="HOME">
             <span className="block font-medium text-[#f1efe8]">VOID AGENCY</span>
             <span className="mt-2 block font-serif text-sm italic normal-case tracking-normal text-[#f1efe8]/54">Technical SEO · AI Search · Web Visibility</span>
           </a>
           <nav className="flex flex-wrap items-center gap-3 md:justify-center md:gap-6">
-            {[
-              ['WORK', '/#selected-works'],
-              ['METHOD', '/method'],
-              ['ABOUT', '/about'],
-              ['NOTES', '/#contact'],
-            ].map(([item, href]) => (
-              <a key={item} href={href} data-cursor-text={item} className={`hover-target px-3 py-2 transition-[border-color,color,background-color] duration-300 hover:bg-[#f1efe8]/[0.035] ${item === 'METHOD' ? 'border border-[#f1efe8]/35 text-[#f1efe8]' : 'text-[#f1efe8]/58'}`}>
-                {item}
-              </a>
-            ))}
+            <NavLink href="/#selected-works" id="method-nav-work">WORK</NavLink>
+            <NavLink href="/method" active id="method-nav-method">METHOD</NavLink>
+            <NavLink href="/about" id="method-nav-about">ABOUT</NavLink>
+            <NavLink href="/#contact" id="method-nav-contact">CONTACT</NavLink>
           </nav>
-          <a href="mailto:sulayman.bowles@gmail.com" data-cursor-text="CONTACT" className="hover-target flex items-center gap-4 justify-self-start text-[#f1efe8]/75 transition-colors hover:text-[#f1efe8] md:justify-self-end">
+          <a href="/#contact" id="method-header-contact" data-cursor-text="CONTACT" className="hover-target flex items-center gap-4 justify-self-start text-[#f1efe8]/75 transition-colors hover:text-[#f1efe8] md:justify-self-end">
             <span className="h-7 w-7 rounded-full border border-[#f1efe8]/28" />
             <span>CONTACT</span>
           </a>
@@ -456,22 +611,25 @@ export default function VoidAgencyMethodPage() {
       <section className="mx-auto grid min-h-[calc(100vh-104px)] max-w-[1480px] grid-cols-1 gap-12 px-4 pb-20 pt-16 md:px-8 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] xl:px-10 xl:pt-20">
         <ScrollReveal yOffset={18} blur={false} className="min-w-0">
           <div className="mb-9 text-[10px] uppercase tracking-[0.36em] text-[#f1efe8]/48">METHOD</div>
-          <h1 className="font-serif text-[clamp(5.2rem,12vw,12.4rem)] italic leading-[0.74] tracking-[-0.055em] text-[#f1efe8]">
-            VOID
+          <h1 
+            style={{ viewTransitionName: 'void-title' } as CSSProperties}
+            className="font-serif text-[clamp(5.2rem,12vw,12.4rem)] italic leading-[0.74] tracking-[-0.055em] text-[#f1efe8]"
+          >
+            <ScrambleText text="VOID" trigger="once" />
             <br />
-            AGENCY.
+            <ScrambleText text="AGENCY." trigger="once" />
           </h1>
           <p className="mt-12 max-w-xl text-sm font-medium uppercase leading-relaxed tracking-[0.24em] text-[#f1efe8]/82">
-            TECHNICAL SEO SYSTEMS FOR SEARCH,
+            <RevealText text="TECHNICAL SEO SYSTEMS FOR SEARCH," delay={0.25} />
             <br />
-            AI VISIBILITY, AND CONVERSION.
+            <RevealText text="AI VISIBILITY, AND CONVERSION." delay={0.4} />
           </p>
           <p className="mt-8 max-w-[34rem] text-base leading-relaxed text-[#f1efe8]/58">
             Void Agency audits the technical layer behind search visibility: crawl paths, indexation, site architecture, internal links, structured data, performance, analytics, and AI crawler access. The goal is simple: make your site easier to find, understand, cite, and act on.
           </p>
           <div className="mt-12 flex flex-wrap items-center gap-8">
-            <CircleAuditButton />
-            <ArrowLink href="#case-studies">VIEW CASE STUDIES</ArrowLink>
+            <CircleAuditButton id="method-hero-audit-btn" />
+            <ArrowLink id="method-hero-cases-btn" href="#case-studies">VIEW CASE STUDIES</ArrowLink>
           </div>
         </ScrollReveal>
 
@@ -527,22 +685,9 @@ export default function VoidAgencyMethodPage() {
 
         <div className="grid grid-cols-1 border border-[#f1efe8]/12 md:grid-cols-2 xl:grid-cols-4">
           {processSteps.map((step, index) => (
-            <motion.div
-              key={step.title}
-              className="group relative border-[#f1efe8]/12 p-6 transition-[background-color,border-color] duration-500 hover:bg-[#f1efe8]/[0.025] md:border-r md:last:border-r-0"
-              whileHover={{ y: -4 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
-            >
-              <div className="mb-12 flex items-start justify-between text-[10px] uppercase tracking-[0.3em] text-[#f1efe8]/38">
-                <span>{String(index + 1).padStart(2, '0')}</span>
-                <span>{index < processSteps.length - 1 ? '→' : 'END'}</span>
-              </div>
-              <div className="mb-8 text-[#f1efe8]/58 transition-colors duration-500 group-hover:text-[#f1efe8]/82">
-                <ProcessIcon type={step.icon} />
-              </div>
-              <h3 className="mb-4 text-xs uppercase tracking-[0.34em] text-[#f1efe8]">{step.title}</h3>
-              <p className="text-sm leading-relaxed text-[#f1efe8]/55">{step.copy}</p>
-            </motion.div>
+            <div key={step.title}>
+              <ProcessStepCard step={step} index={index} />
+            </div>
           ))}
         </div>
       </section>
@@ -578,8 +723,8 @@ export default function VoidAgencyMethodPage() {
               Void Agency finds the technical problems holding back search visibility and turns them into a clear, prioritized action plan.
             </p>
             <div className="flex flex-wrap items-center gap-7 lg:justify-end">
-              <CircleAuditButton className="h-24 w-24 md:h-28 md:w-28" />
-              <ArrowLink href="mailto:sulayman.bowles@gmail.com">DISCUSS YOUR SITE</ArrowLink>
+              <CircleAuditButton id="method-footer-audit-btn" className="h-24 w-24 md:h-28 md:w-28" />
+              <ArrowLink id="method-footer-discuss-btn" href="/#contact">DISCUSS YOUR SITE</ArrowLink>
             </div>
           </div>
         </ScrollReveal>
@@ -590,22 +735,18 @@ export default function VoidAgencyMethodPage() {
           <div className="text-[#f1efe8]">VOID AGENCY</div>
           <div className="mt-2 font-serif text-sm italic normal-case tracking-normal">Technical SEO · AI Search · Web Visibility</div>
         </div>
-        <nav className="flex flex-wrap gap-5">
-          {[
-            ['WORK', '/#selected-works'],
-            ['METHOD', '/method'],
-            ['ABOUT', '/about'],
-            ['NOTES', '/#contact'],
-          ].map(([item, href]) => (
-            <a key={item} href={href} data-cursor-text={item} className="hover-target transition-colors hover:text-[#f1efe8]">{item}</a>
-          ))}
+        <nav className="flex flex-wrap gap-5" id="method-footer-nav">
+          <NavLink href="/#selected-works" id="method-footer-work">WORK</NavLink>
+          <NavLink href="/method" id="method-footer-method" active>METHOD</NavLink>
+          <NavLink href="/about" id="method-footer-about">ABOUT</NavLink>
+          <NavLink href="/#contact" id="method-footer-contact">CONTACT</NavLink>
         </nav>
         <div className="md:text-right">
           © 2026 VOID AGENCY
           <br />
           ALL RIGHTS RESERVED
         </div>
-        <a href="#top" aria-label="Back to top" data-cursor-text="TOP" className="hover-target h-9 w-9 rounded-full border border-[#f1efe8]/26 transition-colors hover:bg-[#f1efe8] hover:text-[#080807]" />
+        <a href="#top" id="method-back-to-top" aria-label="Back to top" data-cursor-text="TOP" className="hover-target h-9 w-9 rounded-full border border-[#f1efe8]/26 transition-colors hover:bg-[#f1efe8] hover:text-[#080807]" />
       </footer>
     </main>
   );

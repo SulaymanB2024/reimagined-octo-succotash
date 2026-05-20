@@ -5,27 +5,19 @@ export function ShutterWipe() {
   const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const link = target.closest('a');
-      if (link && link.getAttribute('href')?.startsWith('mailto:')) {
-        e.preventDefault();
-        setIsActive(true);
-        setTimeout(() => {
-          window.location.href = link.getAttribute('href')!;
-          setTimeout(() => setIsActive(false), 500); // Revert after sending
-        }, 1200); // Wait for shutter to close
-      }
+    (window as any).triggerShutter = (active: boolean) => {
+      setIsActive(active);
     };
-    
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
+
+    return () => {
+      delete (window as any).triggerShutter;
+    };
   }, []);
 
   return (
     <AnimatePresence>
       {isActive && (
-        <div className="fixed inset-0 z-[200] pointer-events-none flex flex-col">
+        <div className="fixed inset-0 z-[200] pointer-events-auto flex flex-col">
           <motion.div 
             className="w-full h-1/2 bg-ink"
             initial={{ y: '-100%' }}

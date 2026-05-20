@@ -120,7 +120,7 @@ export function GenerativeMesh({ className = '', color = 'rgba(7, 7, 7, 0.4)', b
         style={{ y: scrollY, rotateX, willChange: 'transform' }} 
         className="absolute inset-0 w-full h-[120%] -top-[10%]"
       >
-        <canvas ref={canvasRef} className="w-full h-full block origin-center" />
+        <canvas ref={canvasRef} className="w-full h-full block origin-center" role="presentation" aria-hidden="true" />
       </motion.div>
     </div>
   );

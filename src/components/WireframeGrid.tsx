@@ -41,7 +41,7 @@ export function WireframeGrid({ className = '', cols = 12, rows = 12 }: Wirefram
   const actualRows = isMobile ? Math.floor(rows / 2) : rows;
 
   return (
-    <div className={`relative w-full h-full overflow-hidden ${className}`}>
+    <div className={`relative w-full h-full overflow-hidden ${className}`} aria-hidden="true">
       {/* Grid Lines */}
       <div 
         className="absolute inset-0 flex justify-between"

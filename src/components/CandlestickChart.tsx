@@ -125,7 +125,7 @@ export default function CandlestickChart({ className = '' }: { className?: strin
       const scaleY = (p: number) => height - ((p - minPrice) / (maxPrice - minPrice)) * height;
 
       // Draw grid
-      ctx.strokeStyle = 'rgba(235, 232, 225, 0.05)';
+      ctx.strokeStyle = 'rgba(241, 239, 232, 0.05)';
       ctx.lineWidth = 1;
       ctx.setLineDash([2, 4]);
       for (let i = 1; i <= 4; i++) {
@@ -158,11 +158,11 @@ export default function CandlestickChart({ className = '' }: { className?: strin
            hoveredData = { ...c, x: x + candleWidth / 2, y: scaledClose };
         }
 
-        const colorUp = isHovered ? '#FFFFFF' : 'rgba(235, 232, 225, 0.9)';
-        const colorDown = isHovered ? 'rgba(235, 232, 225, 0.8)' : 'rgba(235, 232, 225, 0.3)';
+        const colorUp = isHovered ? '#FFFFFF' : 'rgba(241, 239, 232, 0.9)';
+        const colorDown = isHovered ? 'rgba(241, 239, 232, 0.8)' : 'rgba(241, 239, 232, 0.3)';
 
         ctx.strokeStyle = isUp ? colorUp : colorDown;
-        ctx.fillStyle = isUp ? colorUp : '#070707';
+        ctx.fillStyle = isUp ? colorUp : '#080807';
         ctx.lineWidth = 1;
 
         // Wick
@@ -177,13 +177,13 @@ export default function CandlestickChart({ className = '' }: { className?: strin
             ctx.strokeRect(x, bodyTop, candleWidth, bodyHeight);
         } else {
             ctx.strokeRect(x, bodyTop, candleWidth, bodyHeight);
-            ctx.fillStyle = '#070707'; // background to clear inside
+            ctx.fillStyle = '#080807'; // background to clear inside
             ctx.fillRect(x + 1, bodyTop + 1, candleWidth - 2, bodyHeight - 2);
         }
 
         if (isHovered) {
            // Highlight line
-           ctx.strokeStyle = 'rgba(235, 232, 225, 0.3)';
+           ctx.strokeStyle = 'rgba(241, 239, 232, 0.3)';
            ctx.setLineDash([2, 5]);
            ctx.beginPath();
            ctx.moveTo(x + candleWidth / 2, 0);
@@ -228,8 +228,8 @@ export default function CandlestickChart({ className = '' }: { className?: strin
 
   return (
     <div className={`w-full h-full relative group ${className}`}>
-        <canvas ref={canvasRef} className="w-full h-full block mix-blend-screen pointer-events-auto" />
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_40%,#070707_120%)] mix-blend-multiply opacity-80"></div>
+        <canvas ref={canvasRef} className="w-full h-full block mix-blend-screen pointer-events-auto" role="img" aria-label="Interactive candlestick chart showing real-time simulated market data and trading indicators" />
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_40%,#080807_120%)] mix-blend-multiply opacity-80"></div>
         <div 
           ref={tooltipRef} 
           className="absolute pointer-events-none opacity-0 bg-ink/90 border border-canvas/20 p-3 backdrop-blur-md transition-opacity duration-150 z-20 shadow-2xl"

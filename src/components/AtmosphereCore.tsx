@@ -30,7 +30,7 @@ export default function AtmosphereCore({ className = '' }: { className?: string 
   const yTrans3 = useTransform(smoothY, v => v * -30);
 
   return (
-    <div ref={containerRef} className={`relative overflow-hidden w-full h-full bg-ink ${className}`}>
+    <div ref={containerRef} className={`relative overflow-hidden w-full h-full bg-ink ${className}`} aria-hidden="true">
       {/* Dynamic light bursts simulating fluid depth */}
       <motion.div 
         style={{ x: xTrans1, y: yTrans1, scale: scale1, willChange: 'transform' }}

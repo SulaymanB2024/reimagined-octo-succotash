@@ -107,7 +107,7 @@ export function InkTrails() {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 opacity-30">
       <div className="w-full h-full overflow-hidden">
-        <canvas ref={canvasRef} className="w-full h-full" />
+        <canvas ref={canvasRef} className="w-full h-full" role="presentation" aria-hidden="true" />
       </div>
     </div>
   );
