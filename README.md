@@ -2,6 +2,10 @@
 
 A Vite React portfolio and agency/research site for Sulayman Bowles. The app keeps the animated client experience, while the production build generates route-specific static HTML for crawlable metadata, summaries, canonical URLs, and JSON-LD.
 
+Canonical current site: [sulayman-bowles.dev](https://sulayman-bowles.dev/).
+
+Current source graph and research assets: [Research hub](https://sulayman-bowles.dev/research) and [AI information](https://sulayman-bowles.dev/ai-information).
+
 ## Routes
 
 - `/`
